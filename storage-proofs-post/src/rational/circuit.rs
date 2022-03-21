@@ -35,96 +35,96 @@ impl<'a, Tree: MerkleTreeTrait> CircuitComponent for RationalPoStCircuit<Tree> {
 
 #[cfg(feature = "cpu_optimization")]
 impl<'a, Tree: 'static + MerkleTreeTrait> Circuit<Fr> for RationalPoStCircuit<Tree> {
-  fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
-      let comm_rs = self.comm_rs;
-      let comm_cs = self.comm_cs;
-      let comm_r_lasts = self.comm_r_lasts;
-      let leafs = self.leafs;
-      let paths = self.paths;
+    fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
+        let comm_rs = self.comm_rs;
+        let comm_cs = self.comm_cs;
+        let comm_r_lasts = self.comm_r_lasts;
+        let leafs = self.leafs;
+        let paths = self.paths;
 
-      assert_eq!(paths.len(), leafs.len());
-      assert_eq!(paths.len(), comm_rs.len());
-      assert_eq!(paths.len(), comm_cs.len());
-      assert_eq!(paths.len(), comm_r_lasts.len());
+        assert_eq!(paths.len(), leafs.len());
+        assert_eq!(paths.len(), comm_rs.len());
+        assert_eq!(paths.len(), comm_cs.len());
+        assert_eq!(paths.len(), comm_r_lasts.len());
 
-      let len = leafs.len();
-      let mut gen_cs = cs.make_vector_copy(len)?;
-      let unit = cs.make_copy()?;
+        let len = leafs.len();
+        let mut gen_cs = cs.make_vector_copy(len)?;
+        let unit = cs.make_copy()?;
 
-      comm_r_lasts
-          .par_iter()
-          .zip(
-              leafs
-                  .par_iter()
-                  .zip(paths.par_iter().zip(gen_cs.par_iter_mut())),
-          )
-          .enumerate()
-          .zip(comm_cs.par_iter())
-          .zip(comm_rs.par_iter())
-          .try_for_each(
-              |(((i, (comm_r_last, (leaf, (path, other_cs)))), comm_c), comm_r)| {
-                  let comm_r_last_num = AllocatedNum::alloc(
-                      other_cs.namespace(|| format!("comm_r_last_{}", i)),
-                      || {
-                          comm_r_last
-                              .map(Into::into)
-                              .ok_or(SynthesisError::AssignmentMissing)
-                      },
-                  )?;
+        comm_r_lasts
+            .par_iter()
+            .zip(
+                leafs
+                    .par_iter()
+                    .zip(paths.par_iter().zip(gen_cs.par_iter_mut())),
+            )
+            .enumerate()
+            .zip(comm_cs.par_iter())
+            .zip(comm_rs.par_iter())
+            .try_for_each(
+                |(((i, (comm_r_last, (leaf, (path, other_cs)))), comm_c), comm_r)| {
+                    let comm_r_last_num = AllocatedNum::alloc(
+                        other_cs.namespace(|| format!("comm_r_last_{}", i)),
+                        || {
+                            comm_r_last
+                                .map(Into::into)
+                                .ok_or(SynthesisError::AssignmentMissing)
+                        },
+                    )?;
 
-                  let comm_c_num = AllocatedNum::alloc(
-                      other_cs.namespace(|| format!("comm_c_{}", i)),
-                      || {
-                          comm_c
-                              .map(Into::into)
-                              .ok_or(SynthesisError::AssignmentMissing)
-                      },
-                  )?;
+                    let comm_c_num = AllocatedNum::alloc(
+                        other_cs.namespace(|| format!("comm_c_{}", i)),
+                        || {
+                            comm_c
+                                .map(Into::into)
+                                .ok_or(SynthesisError::AssignmentMissing)
+                        },
+                    )?;
 
-                  let comm_r_num = AllocatedNum::alloc(
-                      other_cs.namespace(|| format!("comm_r_{}", i)),
-                      || {
-                          comm_r
-                              .map(Into::into)
-                              .ok_or(SynthesisError::AssignmentMissing)
-                      },
-                  )?;
+                    let comm_r_num = AllocatedNum::alloc(
+                        other_cs.namespace(|| format!("comm_r_{}", i)),
+                        || {
+                            comm_r
+                                .map(Into::into)
+                                .ok_or(SynthesisError::AssignmentMissing)
+                        },
+                    )?;
 
-                  comm_r_num.inputize(other_cs.namespace(|| format!("comm_r_{}_input", i)))?;
+                    comm_r_num.inputize(other_cs.namespace(|| format!("comm_r_{}_input", i)))?;
 
-                  // Verify H(Comm_C || comm_r_last) == comm_r
-                  {
-                      let hash_num = <Tree::Hasher as Hasher>::Function::hash2_circuit(
-                          other_cs.namespace(|| format!("H_comm_c_comm_r_last_{}", i)),
-                          &comm_c_num,
-                          &comm_r_last_num,
-                      )?;
+                    // Verify H(Comm_C || comm_r_last) == comm_r
+                    {
+                        let hash_num = <Tree::Hasher as Hasher>::Function::hash2_circuit(
+                            other_cs.namespace(|| format!("H_comm_c_comm_r_last_{}", i)),
+                            &comm_c_num,
+                            &comm_r_last_num,
+                        )?;
 
-                      // Check actual equality
-                      constraint::equal(
-                          other_cs,
-                          || format!("enforce_comm_c_comm_r_last_hash_comm_r_{}", i),
-                          &comm_r_num,
-                          &hash_num,
-                      );
-                  }
+                        // Check actual equality
+                        constraint::equal(
+                            other_cs,
+                            || format!("enforce_comm_c_comm_r_last_hash_comm_r_{}", i),
+                            &comm_r_num,
+                            &hash_num,
+                        );
+                    }
 
-                  PoRCircuit::<Tree>::synthesize(
-                      other_cs.namespace(|| format!("challenge_inclusion{}", i)),
-                      Root::Val(*leaf),
-                      path.clone().into(),
-                      Root::from_allocated::<CS>(comm_r_last_num),
-                      true,
-                  )
-              },
-          )?;
+                    PoRCircuit::<Tree>::synthesize(
+                        other_cs.namespace(|| format!("challenge_inclusion{}", i)),
+                        Root::Val(*leaf),
+                        path.clone().into(),
+                        Root::from_allocated::<CS>(comm_r_last_num),
+                        true,
+                    )
+                },
+            )?;
 
-      for other_cs in gen_cs {
-          cs.part_aggregate_element(other_cs, &unit);
-      }
+        for other_cs in gen_cs {
+            cs.part_aggregate_element(other_cs, &unit);
+        }
 
-      Ok(())
-  }
+        Ok(())
+    }
 }
 
 #[cfg(not(feature = "cpu_optimization"))]
