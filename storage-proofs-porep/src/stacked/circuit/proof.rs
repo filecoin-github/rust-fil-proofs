@@ -17,6 +17,11 @@ use storage_proofs_core::{
     util::reverse_bit_numbering,
 };
 
+#[cfg(feature = "cpu_optimization")]
+use rayon::prelude::{
+    IndexedParallelIterator, IntoParallelIterator, IntoParallelRefMutIterator, ParallelIterator,
+};
+
 use crate::stacked::{circuit::params::Proof, StackedDrg};
 
 /// Stacked DRG based Proof of Replication.
@@ -88,6 +93,111 @@ impl<'a, Tree: 'static + MerkleTreeTrait, G: 'static + Hasher> StackedCircuit<'a
     }
 }
 
+#[cfg(feature = "cpu_optimization")]
+impl<'a, Tree: MerkleTreeTrait, G: Hasher> Circuit<Fr> for StackedCircuit<'a, Tree, G> {
+  fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
+      let StackedCircuit {
+          public_params,
+          proofs,
+          replica_id,
+          comm_r,
+          comm_d,
+          comm_r_last,
+          comm_c,
+          ..
+      } = self;
+
+      // Allocate replica_id
+      let replica_id_num = AllocatedNum::alloc(cs.namespace(|| "replica_id"), || {
+          replica_id
+              .map(Into::into)
+              .ok_or(SynthesisError::AssignmentMissing)
+      })?;
+
+      // make replica_id a public input
+      replica_id_num.inputize(cs.namespace(|| "replica_id_input"))?;
+
+      let replica_id_bits =
+          reverse_bit_numbering(replica_id_num.to_bits_le(cs.namespace(|| "replica_id_bits"))?);
+
+      // Allocate comm_d as Fr
+      let comm_d_num = AllocatedNum::alloc(cs.namespace(|| "comm_d"), || {
+          comm_d
+              .map(Into::into)
+              .ok_or(SynthesisError::AssignmentMissing)
+      })?;
+
+      // make comm_d a public input
+      comm_d_num.inputize(cs.namespace(|| "comm_d_input"))?;
+
+      // Allocate comm_r as Fr
+      let comm_r_num = AllocatedNum::alloc(cs.namespace(|| "comm_r"), || {
+          comm_r
+              .map(Into::into)
+              .ok_or(SynthesisError::AssignmentMissing)
+      })?;
+
+      // make comm_r a public input
+      comm_r_num.inputize(cs.namespace(|| "comm_r_input"))?;
+
+      // Allocate comm_r_last as Fr
+      let comm_r_last_num = AllocatedNum::alloc(cs.namespace(|| "comm_r_last"), || {
+          comm_r_last
+              .map(Into::into)
+              .ok_or(SynthesisError::AssignmentMissing)
+      })?;
+
+      // Allocate comm_c as Fr
+      let comm_c_num = AllocatedNum::alloc(cs.namespace(|| "comm_c"), || {
+          comm_c
+              .map(Into::into)
+              .ok_or(SynthesisError::AssignmentMissing)
+      })?;
+
+      // Verify comm_r = H(comm_c || comm_r_last)
+      {
+          let hash_num = <Tree::Hasher as Hasher>::Function::hash2_circuit(
+              cs.namespace(|| "H_comm_c_comm_r_last"),
+              &comm_c_num,
+              &comm_r_last_num,
+          )?;
+
+          // Check actual equality
+          constraint::equal(
+              cs,
+              || "enforce comm_r = H(comm_c || comm_r_last)",
+              &comm_r_num,
+              &hash_num,
+          );
+      }
+
+      let len = proofs.len();
+      let mut gen_cs = cs.make_vector_copy(len)?;
+      let unit = cs.make_copy()?;
+
+      proofs
+          .into_par_iter()
+          .enumerate()
+          .zip(gen_cs.par_iter_mut())
+          .try_for_each(|((i, proof), other_cs)| {
+              proof.synthesize(
+                  &mut other_cs.namespace(|| format!("challenge_{}", i)),
+                  public_params.layer_challenges.layers(),
+                  &comm_d_num,
+                  &comm_c_num,
+                  &comm_r_last_num,
+                  &replica_id_bits,
+              )
+          })?;
+      for other_cs in gen_cs {
+          cs.part_aggregate_element(other_cs, &unit);
+      }
+
+      Ok(())
+  }
+}
+
+#[cfg(not(feature = "cpu_optimization"))]
 impl<'a, Tree: MerkleTreeTrait, G: Hasher> Circuit<Fr> for StackedCircuit<'a, Tree, G> {
     fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
         let StackedCircuit {
