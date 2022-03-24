@@ -6,7 +6,7 @@ use ff::Field;
 use filecoin_hashers::{poseidon::PoseidonFunction, HashFunction, Hasher, PoseidonMDArity};
 use generic_array::typenum::Unsigned;
 
-#[cfg(feature = "cpu_optimization")]
+#[cfg(feature = "cpu-optimization")]
 use rayon::prelude::{
     IndexedParallelIterator, IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator,
 };
@@ -38,7 +38,7 @@ impl<'a, Tree: MerkleTreeTrait> CircuitComponent for ElectionPoStCircuit<Tree> {
     type ComponentPrivateInputs = ComponentPrivateInputs;
 }
 
-#[cfg(feature = "cpu_optimization")]
+#[cfg(feature = "cpu-optimization")]
 impl<'a, Tree: 'static + MerkleTreeTrait> Circuit<Fr> for ElectionPoStCircuit<Tree> {
     fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
         let comm_r = self.comm_r;
@@ -183,7 +183,7 @@ impl<'a, Tree: 'static + MerkleTreeTrait> Circuit<Fr> for ElectionPoStCircuit<Tr
     }
 }
 
-#[cfg(not(feature = "cpu_optimization"))]
+#[cfg(not(feature = "cpu-optimization"))]
 impl<'a, Tree: 'static + MerkleTreeTrait> Circuit<Fr> for ElectionPoStCircuit<Tree> {
     fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
         let comm_r = self.comm_r;

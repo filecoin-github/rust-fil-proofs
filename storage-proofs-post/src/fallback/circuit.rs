@@ -3,13 +3,13 @@ use blstrs::Scalar as Fr;
 use ff::Field;
 use filecoin_hashers::{HashFunction, Hasher};
 
-#[cfg(feature = "cpu_optimization")]
+#[cfg(feature = "cpu-optimization")]
 use rayon::prelude::{
     IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator,
     IntoParallelRefMutIterator, ParallelIterator,
 };
 
-#[cfg(not(feature = "cpu_optimization"))]
+#[cfg(not(feature = "cpu-optimization"))]
 use rayon::prelude::{ParallelIterator, ParallelSlice};
 
 use storage_proofs_core::{
@@ -25,7 +25,7 @@ use storage_proofs_core::{
     util::NODE_SIZE,
 };
 
-#[cfg(not(feature = "cpu_optimization"))]
+#[cfg(not(feature = "cpu-optimization"))]
 use storage_proofs_core::settings::SETTINGS;
 
 use crate::fallback::{PublicParams, PublicSector, SectorProof};
@@ -122,7 +122,7 @@ impl<Tree: 'static + MerkleTreeTrait> Sector<Tree> {
     }
 }
 
-#[cfg(feature = "cpu_optimization")]
+#[cfg(feature = "cpu-optimization")]
 impl<Tree: 'static + MerkleTreeTrait> Circuit<Fr> for &Sector<Tree> {
     fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
         let Sector {
@@ -199,7 +199,7 @@ impl<Tree: 'static + MerkleTreeTrait> Circuit<Fr> for &Sector<Tree> {
     }
 }
 
-#[cfg(not(feature = "cpu_optimization"))]
+#[cfg(not(feature = "cpu-optimization"))]
 impl<Tree: 'static + MerkleTreeTrait> Circuit<Fr> for &Sector<Tree> {
     fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
         let Sector {
@@ -297,7 +297,7 @@ impl<Tree: 'static + MerkleTreeTrait> FallbackPoStCircuit<Tree> {
         Ok(())
     }
 
-    #[cfg(feature = "cpu_optimization")]
+    #[cfg(feature = "cpu-optimization")]
     fn synthesize_extendable<CS: ConstraintSystem<Fr>>(
         self,
         cs: &mut CS,
@@ -321,7 +321,7 @@ impl<Tree: 'static + MerkleTreeTrait> FallbackPoStCircuit<Tree> {
         Ok(())
     }
 
-    #[cfg(not(feature = "cpu_optimization"))]
+    #[cfg(not(feature = "cpu-optimization"))]
     fn synthesize_extendable<CS: ConstraintSystem<Fr>>(
         self,
         cs: &mut CS,

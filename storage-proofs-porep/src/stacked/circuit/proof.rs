@@ -17,7 +17,7 @@ use storage_proofs_core::{
     util::reverse_bit_numbering,
 };
 
-#[cfg(feature = "cpu_optimization")]
+#[cfg(feature = "cpu-optimization")]
 use rayon::prelude::{
     IndexedParallelIterator, IntoParallelIterator, IntoParallelRefMutIterator, ParallelIterator,
 };
@@ -93,7 +93,7 @@ impl<'a, Tree: 'static + MerkleTreeTrait, G: 'static + Hasher> StackedCircuit<'a
     }
 }
 
-#[cfg(feature = "cpu_optimization")]
+#[cfg(feature = "cpu-optimization")]
 impl<'a, Tree: MerkleTreeTrait, G: Hasher> Circuit<Fr> for StackedCircuit<'a, Tree, G> {
     fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
         let StackedCircuit {
@@ -197,7 +197,7 @@ impl<'a, Tree: MerkleTreeTrait, G: Hasher> Circuit<Fr> for StackedCircuit<'a, Tr
     }
 }
 
-#[cfg(not(feature = "cpu_optimization"))]
+#[cfg(not(feature = "cpu-optimization"))]
 impl<'a, Tree: MerkleTreeTrait, G: Hasher> Circuit<Fr> for StackedCircuit<'a, Tree, G> {
     fn synthesize<CS: ConstraintSystem<Fr>>(self, cs: &mut CS) -> Result<(), SynthesisError> {
         let StackedCircuit {
