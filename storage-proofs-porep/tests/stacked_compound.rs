@@ -185,6 +185,7 @@ fn test_stacked_compound<Tree: 'static + MerkleTreeTrait>() {
         &public_inputs,
         &private_inputs,
         &blank_groth_params,
+        false,
     )
     .expect("failed while proving");
 

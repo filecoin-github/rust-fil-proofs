@@ -171,6 +171,7 @@ fn drg_porep_compound<Tree: 'static + MerkleTreeTrait>() {
             &public_inputs,
             &private_inputs,
             &gparams,
+            false,
         )
         .expect("failed while proving");
 

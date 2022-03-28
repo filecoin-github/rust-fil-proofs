@@ -73,7 +73,7 @@ fn por_compound<Tree: 'static + MerkleTreeTrait>() {
         .expect("failed to generate groth params");
 
     let proof =
-        PoRCompound::<Tree>::prove(&public_params, &public_inputs, &private_inputs, &gparams)
+        PoRCompound::<Tree>::prove(&public_params, &public_inputs, &private_inputs, &gparams, false)
             .expect("failed while proving");
 
     let verified =
@@ -226,6 +226,7 @@ fn por_compound_private_root<Tree: 'static + MerkleTreeTrait>() {
             &public_inputs,
             &private_inputs,
             &blank_groth_params,
+            false,
         )
         .expect("failed while proving");
 

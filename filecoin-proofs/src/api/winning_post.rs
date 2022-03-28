@@ -86,6 +86,7 @@ pub fn generate_winning_post_with_vanilla<Tree: 'static + MerkleTreeTrait>(
         &pub_inputs,
         partitioned_proofs,
         &groth_params,
+        true,
     )?;
     let proof = proof.to_vec()?;
 
@@ -174,8 +175,13 @@ pub fn generate_winning_post<Tree: 'static + MerkleTreeTrait>(
         sectors: &priv_sectors,
     };
 
-    let proof =
-        FallbackPoStCompound::<Tree>::prove(&pub_params, &pub_inputs, &priv_inputs, &groth_params)?;
+    let proof = FallbackPoStCompound::<Tree>::prove(
+        &pub_params,
+        &pub_inputs,
+        &priv_inputs,
+        &groth_params,
+        true,
+    )?;
     let proof = proof.to_vec()?;
 
     info!("generate_winning_post:finish");
