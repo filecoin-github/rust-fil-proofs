@@ -207,7 +207,6 @@ where
         &pub_inputs,
         &priv_inputs,
         &blank_groth_params,
-        false,
     )
     .expect("failed while proving");
 

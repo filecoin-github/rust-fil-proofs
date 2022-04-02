@@ -90,14 +90,9 @@ fn test_rational_post_compound<Tree: 'static + MerkleTreeTrait>() {
     let gparams = RationalPoStCompound::<Tree>::groth_params(Some(rng), &pub_params.vanilla_params)
         .expect("failed to create groth params");
 
-    let proof = RationalPoStCompound::<Tree>::prove(
-        &pub_params,
-        &pub_inputs,
-        &priv_inputs,
-        &gparams,
-        false,
-    )
-    .expect("proving failed");
+    let proof =
+        RationalPoStCompound::<Tree>::prove(&pub_params, &pub_inputs, &priv_inputs, &gparams)
+            .expect("proving failed");
 
     let (circuit, inputs) =
         RationalPoStCompound::<Tree>::circuit_for_test(&pub_params, &pub_inputs, &priv_inputs)

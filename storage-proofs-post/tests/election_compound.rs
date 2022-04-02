@@ -135,14 +135,9 @@ fn test_election_post_compound<Tree: 'static + MerkleTreeTrait>() {
         ElectionPoStCompound::<Tree>::groth_params(Some(rng), &pub_params.vanilla_params)
             .expect("failed to generate groth params");
 
-    let proof = ElectionPoStCompound::prove(
-        &pub_params,
-        &pub_inputs,
-        &priv_inputs,
-        &blank_groth_params,
-        false,
-    )
-    .expect("failed while proving");
+    let proof =
+        ElectionPoStCompound::prove(&pub_params, &pub_inputs, &priv_inputs, &blank_groth_params)
+            .expect("failed while proving");
 
     let verified = ElectionPoStCompound::verify(&pub_params, &pub_inputs, &proof, &NoRequirements)
         .expect("failed while verifying");
