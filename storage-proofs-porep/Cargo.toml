@@ -11,7 +11,7 @@ readme = "README.md"
 [dependencies]
 crossbeam = "0.8"
 digest = "0.9"
-storage-proofs-core = { path = "../storage-proofs-core", version = "^11.0.0", default-features = false, features = ["cpu-optimization"]}
+storage-proofs-core = { path = "../storage-proofs-core", version = "^11.0.0", default-features = false }
 sha2raw = { path = "../sha2raw", version = "^6.0.0"}
 filecoin-hashers = { path = "../filecoin-hashers", version = "^6.0.0", default-features = false, features = ["poseidon", "sha256", "cpu-optimization"]}
 rand = "0.8"
@@ -63,7 +63,14 @@ cuda = ["storage-proofs-core/cuda", "filecoin-hashers/cuda", "neptune/cuda", "be
 opencl = ["storage-proofs-core/opencl", "filecoin-hashers/opencl", "neptune/opencl", "bellperson/opencl", "fr32/opencl"]
 isolated-testing = []
 multicore-sdr = ["hwloc"]
-cpu-optimization = []
+cpu-optimization = [
+    "storage-proofs-core/cpu-optimization",
+    "sha2raw/cpu-optimization",
+    "filecoin-hashers/cpu-optimization",
+    "bellperson/cpu-optimization",
+    "neptune/cpu-optimization",
+    "fr32/cpu-optimization",
+]
 
 [[bench]]
 name = "encode"

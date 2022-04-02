@@ -54,7 +54,7 @@ criterion = "0.3"
 bitvec = "0.17"
 rand_xorshift = "0.3.0"
 pretty_assertions = "0.6.1"
-sha2raw = { path = "../sha2raw", version = "^6.0.0"}
+sha2raw = { path = "../sha2raw", version = "^6.0.0", features = ["cpu-optimization"] }
 filecoin-hashers = { path = "../filecoin-hashers", version = "^6.0.0", default-features = false, features = ["blake2s", "sha256", "poseidon"] }
 
 [features]
@@ -64,7 +64,12 @@ asm = ["sha2/sha2-asm"]
 big-sector-sizes-bench = []
 measurements = ["cpu-time", "gperftools"]
 profile = ["measurements"]
-cpu-optimization = []
+cpu-optimization = [
+    "filecoin-hashers/cpu-optimization",
+    "bellperson/cpu-optimization",
+    "neptune/cpu-optimization",
+    "fr32/cpu-optimization",
+]
 
 cuda = ["bellperson/cuda", "neptune/cuda", "filecoin-hashers/cuda", "fr32/cuda"]
 opencl = ["bellperson/opencl", "neptune/opencl", "filecoin-hashers/opencl", "fr32/opencl"]

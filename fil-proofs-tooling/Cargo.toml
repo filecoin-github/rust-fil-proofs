@@ -10,12 +10,12 @@ repository = "https://github.com/filecoin-project/rust-fil-proofs"
 readme = "README.md"
 
 [dependencies]
-storage-proofs-core = { path = "../storage-proofs-core", version = "^11.0.0", default-features = false, features = ["cpu-optimization"] }
-storage-proofs-porep = { path = "../storage-proofs-porep", version = "^11.0.0", default-features = false, features = ["cpu-optimization"] }
-storage-proofs-post = { path = "../storage-proofs-post", version = "^11.0.0", default-features = false, features = ["cpu-optimization"] }
-storage-proofs-update = { path = "../storage-proofs-update", version = "^11.0.0", default-features = false, features = ["cpu-optimization"] }
-filecoin-proofs = { path = "../filecoin-proofs", default-features = false, features = ["cpu-optimization"] }
-filecoin-hashers = { path = "../filecoin-hashers", default-features = false, features = ["poseidon", "blake2s", "sha256", "cpu-optimization"] }
+storage-proofs-core = { path = "../storage-proofs-core", version = "^11.0.0", default-features = false }
+storage-proofs-porep = { path = "../storage-proofs-porep", version = "^11.0.0", default-features = false }
+storage-proofs-post = { path = "../storage-proofs-post", version = "^11.0.0", default-features = false }
+storage-proofs-update = { path = "../storage-proofs-update", version = "^11.0.0", default-features = false }
+filecoin-proofs = { path = "../filecoin-proofs", default-features = false }
+filecoin-hashers = { path = "../filecoin-hashers", default-features = false, features = ["poseidon", "blake2s", "sha256"] }
 clap = "2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -77,7 +77,15 @@ opencl = [
 ]
 measurements = ["storage-proofs-core/measurements"]
 profile = ["storage-proofs-core/profile", "measurements"]
-cpu-optimization = []
+cpu-optimization = [
+    "storage-proofs-core/cpu-optimization",
+    "storage-proofs-porep/cpu-optimization",
+    "storage-proofs-post/cpu-optimization",
+    "storage-proofs-update/cpu-optimization",
+    "filecoin-hashers/cpu-optimization",
+    "filecoin-proofs/cpu-optimization",
+    "bellperson/cpu-optimization"
+]
 
 [target.'cfg(target_arch = "x86_64")'.dependencies]
 raw-cpuid = "8.1.2"

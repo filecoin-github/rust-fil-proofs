@@ -28,7 +28,9 @@ rand_xorshift = "0.3"
 default = ["cpu-optimization"]
 cuda = ["bellperson/cuda"]
 opencl = ["bellperson/opencl"]
-cpu-optimization = []
+cpu-optimization = [
+    "bellperson/cpu-optimization"
+]
 
 [[bench]]
 name = "fr"

@@ -27,7 +27,10 @@ hex = "0.4.2"
 [features]
 default = ["opencl", "blake2s", "poseidon", "sha256", "cpu-optimization"]
 
-cpu-optimization = []
+cpu-optimization = [
+    "neptune/cpu-optimization",
+    "bellperson/cpu-optimization"
+]
 
 cuda = ["bellperson/cuda", "neptune/cuda"]
 opencl = ["bellperson/opencl", "neptune/opencl"]

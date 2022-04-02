@@ -81,4 +81,12 @@ cuda = [
 multicore-sdr = [
     "storage-proofs-porep/multicore-sdr",
 ]
-cpu-optimization = []
+cpu-optimization = [
+    "storage-proofs-core/cpu-optimization",
+    "storage-proofs-porep/cpu-optimization",
+    "sha2raw/cpu-optimization",
+    "filecoin-hashers/cpu-optimization",
+    "bellperson/cpu-optimization",
+    "neptune/cpu-optimization",
+    "fr32/cpu-optimization",
+]
